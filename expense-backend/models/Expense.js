@@ -24,17 +24,9 @@ const settlementSchema = new mongoose.Schema(
 
 const expenseSchema = new mongoose.Schema(
   {
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    amount: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+    description: { type: String, required: true, trim: true },
+    amount: { type: Number, required: true, min: 0 },
+    expenseDate: { type: Date, required: true },
 
     qrImage: {
       type: String,

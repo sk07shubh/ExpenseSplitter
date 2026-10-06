@@ -10,14 +10,22 @@ function getSettlement(expense, userId) {
 
 router.post("/", authMiddleware, async (req, res) => {
   try {
-    const { description, amount, participantIds, qrImage } = req.body;
+    const { description, amount, participantIds, qrImage, expenseDate } = req.body;
     const participants = [...new Set((participantIds || []).filter(Boolean).map(String))];
-    if (!description || !amount || participants.length < 2 || !qrImage) {
+    if (!description || !amount || participants.length < 2 || !qrImage || !expenseDate) {
       return res.status(400).json({ error: "Description, amount, QR image and at least one friend are required" });
     }
     if (!participants.includes(req.userId)) participants.push(req.userId);
     const settlements = participants.filter((id) => id !== req.userId).map((user) => ({ user, status: "pending" }));
-    const newExpense = new Expense({ description: description.trim(), amount: Number(amount), qrImage, paidBy: req.userId, splitAmong: participants, settlements });
+    const newExpense = new Expense({
+  description: description.trim(),
+  amount: Number(amount),
+  expenseDate: new Date(expenseDate),
+  qrImage,
+  paidBy: req.userId,
+  splitAmong: participants,
+  settlements
+});
     await newExpense.save();
     res.json(newExpense);
   } catch (err) { res.status(500).json({ error: err.message }); }
@@ -42,7 +50,7 @@ router.get("/", authMiddleware, async (req, res) => {
       else if (settlement?.status === "paid") historyStatus = "paid";
       else if (settlement?.status === "requested") historyStatus = "awaiting approval";
       else historyStatus = "to pay";
-      return { _id: exp._id, description: exp.description, amount: exp.amount, share, qrImage: exp.qrImage, paidBy: exp.paidBy, splitAmong: exp.splitAmong, settlementStatus: isPayer ? "paid" : settlement?.status || "pending", isPayer, isSettled: isPayer || settlement?.status === "paid", historyStatus, participantCount: exp.splitAmong.length, paidParticipants, unpaidParticipants, createdAt: exp.createdAt };
+      return { _id: exp._id, description: exp.description, amount: exp.amount, share, qrImage: exp.qrImage, paidBy: exp.paidBy, splitAmong: exp.splitAmong, settlementStatus: isPayer ? "paid" : settlement?.status || "pending", isPayer, isSettled: isPayer || settlement?.status === "paid", historyStatus, participantCount: exp.splitAmong.length, paidParticipants, unpaidParticipants, createdAt: exp.createdAt,expenseDate: exp.expenseDate, };
     });
 
     const outstanding = perExpense.filter((item) => !item.isSettled && !item.isPayer);
