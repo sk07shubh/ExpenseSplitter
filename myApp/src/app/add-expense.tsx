@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   View,
   Text,
@@ -23,6 +24,10 @@ type FoundUser = {
 export default function AddExpense() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
+
+  const [expenseDate, setExpenseDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
   const [friendUsername, setFriendUsername] = useState("");
   const [friend, setFriend] = useState<FoundUser | null>(null);
   const [qrImage, setQrImage] = useState<string | null>(null);
@@ -92,6 +97,7 @@ export default function AddExpense() {
       await api.post("/expenses", {
         description: description.trim(),
         amount: numericAmount,
+        expenseDate: expenseDate.toISOString(),
         participantIds: [selfId, friend._id],
         qrImage,
       });
@@ -131,6 +137,37 @@ export default function AddExpense() {
         value={amount}
         onChangeText={setAmount}
       />
+
+      <Text style={styles.label}>Expense date</Text>
+
+      <TouchableOpacity
+        style={styles.dateButton}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={styles.dateButtonText}>
+          📅{" "}
+          {expenseDate.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })}
+        </Text>
+      </TouchableOpacity>
+
+      {showDatePicker && (
+        <DateTimePicker
+          value={expenseDate}
+          mode="date"
+          display="default"
+          maximumDate={new Date()}
+          onValueChange={(event, selectedDate) => {
+  setExpenseDate(selectedDate);
+}}
+onDismiss={() => {
+  setShowDatePicker(false);
+}}
+        />
+      )}
 
       <Text style={styles.label}>Split with</Text>
 
@@ -229,6 +266,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 8,
     fontWeight: "600",
+  },
+
+  dateButton: {
+    borderWidth: 1,
+    borderColor: "#e3e0f0",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 14,
+  },
+
+  dateButtonText: {
+    fontSize: 16,
+    color: "#222",
   },
 
   searchRow: {

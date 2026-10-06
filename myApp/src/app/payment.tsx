@@ -4,7 +4,15 @@ import { router, useLocalSearchParams } from "expo-router";
 import api from "../utils/api";
 import { downloadQrImage } from "../utils/qr";
 
-type Expense = { _id: string; description: string; amount: number; share: number; qrImage: string; paidBy: { _id: string; name: string } };
+type Expense = {
+  _id: string;
+  description: string;
+  amount: number;
+  share: number;
+  qrImage: string;
+  paidBy: { _id: string; name: string };
+  settlementStatus: string;
+};
 
 export default function Payment() {
   const { friendId, friendName } = useLocalSearchParams<{ friendId: string; friendName: string }>();
